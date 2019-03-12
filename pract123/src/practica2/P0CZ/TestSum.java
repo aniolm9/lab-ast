@@ -19,7 +19,10 @@ public class TestSum {
         CounterThread_fail th4 = new CounterThread_fail();
         th4.start();
         
-        sleep(100);
+        //th1.join();
+        //th2.join();
+        th3.join();
+        th4.join();
         //System.out.println(CounterThread.x);
         System.out.println(CounterThread_fail.x);
     }

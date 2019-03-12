@@ -8,7 +8,10 @@ public class MonitorCZ {
     ReentrantLock lock = new ReentrantLock();
 
     public void inc() {
-        throw new RuntimeException("Aquest mètode s'ha de completar...");
+        //throw new RuntimeException("Aquest mètode s'ha de completar...");
+        lock.lock();
+        x = x + 1;
+        lock.unlock();
     }
 
     public int getX() {

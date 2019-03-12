@@ -3,7 +3,7 @@ package practica2.P0CZ.Monitor;
 public class CounterThreadCZ extends Thread {
 
     private final MonitorCZ mon;
-    private final int numberOfIterations = 100;
+    private final int numberOfIterations = 100000;
 
     public CounterThreadCZ(MonitorCZ monitor) {
         this.mon = monitor;

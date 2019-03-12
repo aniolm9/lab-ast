@@ -20,6 +20,7 @@ public class TestSum {
         th4.start();
         
         sleep(100);
+        //System.out.println(CounterThread.x);
         System.out.println(CounterThread_fail.x);
     }
 }

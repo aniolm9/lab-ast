@@ -7,37 +7,37 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MonitorSync {
-
     private final int N;
     private Lock l;
-    private Condition[] queue;
-    private int current;
+    private int currentID;
+    private Condition c;
 
     public MonitorSync(int N) {
         this.N = N;
         this.l = new ReentrantLock();
-        this.queue = new Condition[N];
-        for (int i = 0; i < N; i++) {
-            queue[i] = l.newCondition();
-        }
+        this.c = l.newCondition();
+        this.currentID = 0;
     }
 
     public void waitForTurn(int id) {
         l.lock();
-        current = id;
-        l.unlock();
-    }
-    
-    public void transferTurn() {
-        l.lock();
         try {
-            queue[current].await();
+            while(this.currentID != id) {
+                c.await();
+            }
         }
         catch (InterruptedException ex) {
             Logger.getLogger(MonitorSync.class.getName()).log(Level.SEVERE, null, ex);
         }
-        queue[current+1].signal();
+        finally {
+            l.unlock();
+        }
+    }
+
+    public void transferTurn() {
+        l.lock();
+        this.currentID = (this.currentID+1) % N; 
+        c.signalAll();
         l.unlock();
-        
     }
 }

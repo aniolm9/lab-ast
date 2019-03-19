@@ -65,15 +65,17 @@ public class CircularQueue<E> implements Queue<E> {
         //throw new RuntimeException("Aquest mètode s'ha de completar...");
         if (empty()) throw new IllegalArgumentException("You are trying to acess an empty array");
         this.head = (this.head + 1) % N;
+        this.nelem--;
         return this.queue[(N+this.head-1) % N];
     }
 
     @Override
     public void put(E e) {
         //throw new RuntimeException("Aquest mètode s'ha de completar...");
+        if (this.full()) throw new IllegalArgumentException("You are trying to acess a full array");
         this.queue[this.tail] = e;
         this.tail = (this.tail + 1) % this.N;
-        if (!this.full()) this.nelem++;
+        this.nelem++;
     }
 
     @Override

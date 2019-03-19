@@ -1,5 +1,6 @@
 package practica2.Protocol;
 
+import practica1.Protocol.QueueChannel;
 import utils.Channel;
 
 public class TestProtocol {
@@ -10,7 +11,14 @@ public class TestProtocol {
 
         Sender sender = new Sender(channel, 5, 2);
         Receiver receiver = new Receiver(channel, 10);
-        //Completar...
+        Thread s1 = new Thread(sender);
+        Thread r1 = new Thread(receiver);
+        
+        s1.start();
+        r1.start();
+        
+        s1.join();
+        r1.join();
         
         System.out.println("\nSimulation end.");
     }

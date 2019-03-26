@@ -1,6 +1,6 @@
 package practica2.Protocol;
 
-import practica1.Protocol.TSocketSend;
+import practica3.TSocketSend;
 import utils.Channel;
 
 public class Sender extends Thread {

@@ -9,12 +9,13 @@ public class TSocketSend extends TSocketBase {
 
     public TSocketSend(Channel channel) {
         super(channel);
-        //sndMSS = channel.getMSS();
-        sndMSS = 3;
+        sndMSS = channel.getMSS();
+        //sndMSS = 3;
     }
 
     public void sendData(byte[] data, int offset, int length) {
         int dataLength = length;
+        //System.out.println("sendData length: " + length);
         while (dataLength >= sndMSS) {
             this.sendSegment(this.segmentize(data, offset, sndMSS));
             offset += sndMSS;

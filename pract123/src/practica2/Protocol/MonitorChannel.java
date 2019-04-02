@@ -9,10 +9,10 @@ import utils.Channel;
 
 public class MonitorChannel implements Channel {
 
-    private int N;
-    private Lock l;
-    private Condition rQueue, sQueue;
-    private CircularQueue<TCPSegment> cq;
+    protected int N;
+    protected Lock l;
+    protected Condition rQueue, sQueue;
+    protected CircularQueue<TCPSegment> cq;
 
     public MonitorChannel(int N) {
         this.N = N;

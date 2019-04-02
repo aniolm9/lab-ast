@@ -14,7 +14,6 @@ public class TSocketRecv extends TSocketBase {
         super(channel);
         rcvQueue = new CircularQueue<TCPSegment>(20);
         rcvSegConsumedBytes = 0;
-
     }
 
     public TSocketRecv(Channel channel, boolean task) {
@@ -30,18 +29,14 @@ public class TSocketRecv extends TSocketBase {
     // Still testing.
     public int receiveData(byte[] buf, int offset, int length) {
         int n = 0;
-        int dataLength = rcvQueue.peekFirst().getDataLength();
-        int read;
         lock.lock();
         try {
             //throw new RuntimeException("Aquest mètode s'ha de completar...");
-            while (dataLength >= length) {
-                read = consumeSegment(buf, offset, dataLength);
-                n += read;
-                offset += dataLength;
-                dataLength -= read;
+            //System.out.println("receiveData length: " + length);
+            while (n < length && !rcvQueue.empty()) {
+                n += consumeSegment(buf, offset+n, length-n);
+                System.out.println(n);
             }
-            if (dataLength > 0) n += consumeSegment(buf, offset, dataLength);
         } finally {
             lock.unlock();
             return n;

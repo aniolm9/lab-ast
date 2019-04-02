@@ -1,6 +1,6 @@
 package practica2.Protocol;
 
-import practica1.Protocol.TSocketRecv;
+import practica3.TSocketRecv;
 import utils.Channel;
 
 public class Receiver extends Thread {

@@ -33,6 +33,9 @@ public class TSocketRecv extends TSocketBase {
         try {
             //throw new RuntimeException("Aquest mètode s'ha de completar...");
             //System.out.println("receiveData length: " + length);
+            while (rcvQueue.empty()) {
+                appCV.await();
+            }
             while (n < length && !rcvQueue.empty()) {
                 n += consumeSegment(buf, offset+n, length-n);
                 System.out.println(n);
@@ -71,14 +74,16 @@ public class TSocketRecv extends TSocketBase {
         lock.lock();
         try {
             //throw new RuntimeException("Aquest mètode s'ha de completar...");
-            if (!rcvQueue.full()) rcvQueue.put(rseg);
+            if (!rcvQueue.full()) {
+                rcvQueue.put(rseg);
+                appCV.signalAll();
+            }
         } finally {
             lock.unlock();
         }
     }
 
     class ReceiverTask implements Runnable {
-
         @Override
         public void run() {
             while (true) {

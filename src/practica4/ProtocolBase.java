@@ -1,8 +1,7 @@
-
-package ast.practica4;
+package practica4;
 
 // declareu Channel import
-...
+import utils.Channel;
 import ast.logging.Log;
 import ast.logging.LogFactory;
 

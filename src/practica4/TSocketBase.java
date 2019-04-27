@@ -1,5 +1,4 @@
-
-package ast.practica4;
+package practica4;
 
 import ast.logging.Log;
 

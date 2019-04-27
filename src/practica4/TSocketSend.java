@@ -1,4 +1,4 @@
-package ast.practica4;
+package practica4;
 
 import ast.protocols.tcp.TCPSegment;
 
@@ -17,7 +17,7 @@ public class TSocketSend extends TSocketBase {
    */
   protected TSocketSend(ProtocolSend p, int localPort, int remotePort) {
     super(p, localPort, remotePort);
-    sndMSS = p.channel.getMMS() - TCPSegment.HEADER_SIZE; // IP maximum message size - TCP header size
+    sndMSS = /*p.channel.getMMS()*/ 50 - TCPSegment.HEADER_SIZE; // IP maximum message size - TCP header size
   }
 
   public void sendData(byte[] data, int offset, int length) {

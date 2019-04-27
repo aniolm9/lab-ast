@@ -1,8 +1,11 @@
 
-package ast.practica4;
+package practica4;
 
 // declareu imports
-...
+
+import ast.protocols.tcp.TCPSegment;
+import practica1.CircularQ.CircularQueue;
+
 
 /**
  * Socket for receiving endpoint.

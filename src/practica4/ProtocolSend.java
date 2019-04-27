@@ -18,6 +18,7 @@ public class ProtocolSend extends ProtocolBase {
     }
     public TSocketSend openForOutput(int localPort, int remotePort) {
         lk.lock();
+        //System.out.println("Send Local Port: " + localPort);
         try {
             TSocketSend s = new TSocketSend(this, localPort, remotePort);
             sockets.add(s);

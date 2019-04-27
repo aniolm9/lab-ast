@@ -64,11 +64,11 @@ class Host2 implements Runnable {
       TSocketSend s1 = proto.openForOutput(PORT1, Host1.PORT);
       TSocketSend s2 = proto.openForOutput(PORT2, Host1.PORT);
       
-      Thread th1 = new Thread(new Sender(s1));
-      Thread th2 = new Thread(new Sender(s2));
+      Thread th3 = new Thread(new Sender(s1));
+      Thread th4 = new Thread(new Sender(s2));
       
-      th1.start();
-      th2.start();
+      th3.start();
+      th4.start();
     }
     
 }

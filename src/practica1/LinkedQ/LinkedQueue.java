@@ -19,7 +19,7 @@ public class LinkedQueue<E> implements Queue<E> {
     @Override
     public int size() {
         //throw new RuntimeException("Aquest mètode s'ha de completar...");
-        return this.N;
+        return this.nelem;
     }
 
     @Override

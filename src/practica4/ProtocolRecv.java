@@ -55,12 +55,11 @@ public class ProtocolRecv extends ProtocolBase {
     }
 
     class ReceiverTask implements Runnable {
-
-      public void run() {
-        while (true) {
-            TCPSegment rseg = channel.receive();
-            ipInput(rseg);
+        public void run() {
+            while (true) {
+                TCPSegment rseg = channel.receive();
+                ipInput(rseg);
+            }
         }
-      }
     }
 }

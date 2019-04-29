@@ -23,7 +23,7 @@ public class TSocketRecv extends TSocketBase {
      */
     protected TSocketRecv(ProtocolRecv p, int localPort, int remotePort) {
         super(p, localPort, remotePort);
-        rcvQueue = new CircularQueue<TCPSegment>(20);
+        rcvQueue = new CircularQueue<TCPSegment>(2000);
         rcvSegConsumedBytes = 0;
     }
 
@@ -80,6 +80,9 @@ public class TSocketRecv extends TSocketBase {
             if (!rcvQueue.full()) {
                 rcvQueue.put(rseg);
                 appCV.signalAll();
+            }
+            else {
+                throw new RuntimeException("The receiver queue is full.");
             }
         } finally {
             lk.unlock();

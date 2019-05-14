@@ -35,7 +35,8 @@ public class TSocket {
 
     //Other atributes (sender or receiver)
     //...
-    
+    TCPSegment rcvSegment;
+    protected boolean zeroWindow;
     /**
      * Create an endpoint bound to the given TCP ports.
      */
@@ -47,13 +48,13 @@ public class TSocket {
         this.remotePort = remotePort;
         // init sender variables
         sndMSS = p.net.getMSS() - TCPSegment.HEADER_SIZE; // IP maximum message size - TCP header size
-        segmentAcknowledged = false;
+        segmentAcknowledged = true;
         // init receiver variables
         rcvQueue = new CircularQueue<TCPSegment>(RCV_QUEUE_SIZE);
         rcvSegConsumedBytes = 0;
         rcvWindow = RCV_QUEUE_SIZE;
         //Other necessary initializations
-        //...
+        zeroWindow = false;
     }
 
 
@@ -63,19 +64,23 @@ public class TSocket {
         // Pendent implementar cas finestra 0.
         try {
             log.debug("%s->sendData(length=%d)", this, length);
-            while (!segmentAcknowledged) {
+            while (!segmentAcknowledged || rcvWindow == 0) {
                 appCV.await();
             }
             int dataLength = length;
             while (rcvWindow > 0 && dataLength >= sndMSS) {
                 this.sendSegment(this.segmentize(data, offset, sndMSS));
                 //rcvWindow--;
+                segmentAcknowledged = false;
                 offset += sndMSS;
                 dataLength -= sndMSS;
+                appCV.signalAll();
             }
             if (length > 0 && rcvWindow > 0) {
                 this.sendSegment(this.segmentize(data, offset, dataLength));
                 //rcvWindow--;
+                segmentAcknowledged = false;
+                appCV.signalAll();
             }
             // for each segment to send
                 // wait until the sender is not expecting an acknowledgement
@@ -117,6 +122,7 @@ public class TSocket {
             log.debug("%s->receiveData(maxlen=%d)", this, maxlen);
             // A completar per l'estudiant:
             while (rcvQueue.empty()) {
+                //System.out.println("Empty RCV");
                 appCV.await();
             }
             while (n < maxlen && !rcvQueue.empty()) {
@@ -124,6 +130,12 @@ public class TSocket {
             }
             // wait until there is a received segment
             // get data from the received segment
+            if (zeroWindow && rcvQueue.free() > 0) {
+                System.out.println("Zero-window ACK sent.");
+                zeroWindow = false;
+                sendAck();
+                //appCV.signalAll();
+            }
         }
         catch (InterruptedException ex) {
             ex.printStackTrace();
@@ -150,18 +162,17 @@ public class TSocket {
             rcvQueue.get();
             rcvSegConsumedBytes = 0;
         }
+        //rcvWindow++;
         return n;
     }
 
     protected void sendAck() {
-               // A completar per l'estudiant:
+        // A completar per l'estudiant:
         TCPSegment ack = new TCPSegment();
         ack.setAck(true);
-        //ack.setAckNum();
         ack.setDestinationPort(remotePort);
         ack.setSourcePort(localPort);
-        //ack.setSeqNum();
-        ack.setWindow(rcvWindow);
+        ack.setWindow(rcvQueue.free());
         this.sendSegment(ack);
     }
 
@@ -172,14 +183,18 @@ public class TSocket {
      * @param rseg segment of received packet
      */
     protected void processReceivedSegment(TCPSegment rseg) {
+        rcvSegment = rseg;
         lk.lock();
         try {
             // Check ACK
             if (rseg.isAck()) {
                 // A completar per l'estudiant:
-                ...
-                //segmentAcknowledged = true;
-                //appCV.signalAll();
+                rcvWindow = rseg.getWindow();
+                System.out.println("Window: " + rcvWindow);
+                //if (rcvWindow == 0) zeroWindow = true;
+                segmentAcknowledged = true;
+                //System.out.println("ACK");
+                appCV.signalAll();
                 logDebugState();
             } else if (rseg.getDataLength() > 0) {
                 // Process segment data
@@ -189,7 +204,13 @@ public class TSocket {
                     return;
                 }
                 // A completar per l'estudiant:
-                ...
+                //rcvWindow--;
+                //System.out.println("RCV");
+                rcvQueue.put(rseg);
+                if (rcvQueue.full()) zeroWindow = true;
+                sendAck();
+                //System.out.println("RECV");
+                appCV.signalAll();
                 logDebugState();
             }
         } finally {
@@ -214,8 +235,10 @@ public class TSocket {
     }
 
     public String stateToString() {
+        //TCPSegment rcvSegment = new TCPSegment();
+        //Object sndIsUna=1;
         StringBuilder buf = new StringBuilder();
-        buf.append("{sndIsUna=").append(sndIsUna);
+        buf.append("{segmentAcknowledged=").append(this.segmentAcknowledged);
         if (rcvSegment == null) {
             buf.append(",rcvSegment=null");
         } else {

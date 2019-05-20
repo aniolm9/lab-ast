@@ -8,6 +8,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import ast.protocols.tcp.TCPSegment;
+import ast.util.CircularQueue;
 import ast.util.Timer;
 import java.util.concurrent.TimeUnit;
 
@@ -54,7 +55,7 @@ public class TSocket {
         this.localPort = localPort;
         this.remotePort = remotePort;
         // init sender variables
-        sndMSS = p.net.getMMS() - TCPSegment.HEADER_SIZE; // IP maximum message size - TCP header size
+        sndMSS = p.net.getMSS() - TCPSegment.HEADER_SIZE; // IP maximum message size - TCP header size
         // init receiver variables
         rcvQueue = new CircularQueue<TCPSegment>(RCV_QUEUE_SIZE);
         rcvWindow = RCV_QUEUE_SIZE;
@@ -94,39 +95,40 @@ public class TSocket {
         // A completar per l'estudiant (veieu practica 5):
     }
 
-  protected void timeout() {
-    lk.lock();
-    try {
-      if (sndUnackedSegment != null) {
-        System.out.println("torno a enviar segment DADES: "+ sndUnackedSegment);
-        sendSegment(sndUnackedSegment);
-        startRTO();
+    protected void timeout() {
+      lk.lock();
+      try {
+          if (sndUnackedSegment != null) {
+            System.out.println("torno a enviar segment DADES: "+ sndUnackedSegment);
+            sendSegment(sndUnackedSegment);
+            startRTO();
+          }
       }
-    } finally {
-      lk.unlock();
+      finally {
+          lk.unlock();
+      }
     }
-  }
 
-  protected void startRTO() {
-    if (sndRtTimer != null) {
-      sndRtTimer.cancel();
+    protected void startRTO() {
+        if (sndRtTimer != null) {
+            sndRtTimer.cancel();
+      }
+      sndRtTimer = timerService.startAfter(
+        new Runnable() {
+          @Override
+          public void run() {
+              timeout();
+          }
+        },
+        SND_RTO, TimeUnit.MILLISECONDS);
     }
-    sndRtTimer = timerService.startAfter(
-      new Runnable() {
-        @Override
-        public void run() {
-          timeout();
+
+    protected void stopRTO() {
+        if (sndRtTimer != null) {
+            sndRtTimer.cancel();
         }
-      },
-      SND_RTO, TimeUnit.MILLISECONDS);
-  }
-
-  protected void stopRTO() {
-    if (sndRtTimer != null) {
-      sndRtTimer.cancel();
+        sndRtTimer = null;
     }
-    sndRtTimer = null;
-  }
     
 
     // -------------  RECEIVER PART  ---------------

@@ -3,11 +3,16 @@ package practica6;
 
 // define imports
 
+import utils.FDuplexChannel;
+
+
 public class Main {
 
     public static void main(String[] args){
-	   //Introduir perdues
-        FDuplexChannel c = new FDuplexChannel( ... );
+	//Introduir perdues
+        double rate = 100.0;
+        double lossRatio = 0.0;
+        FDuplexChannel c = new FDuplexChannel(rate, lossRatio);
 
         new Thread(new Host1(c.getLeft())).start();
         new Thread(new Host2(c.getRight())).start();

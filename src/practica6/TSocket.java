@@ -34,7 +34,7 @@ public class TSocket {
     protected Timer.Task sndRtTimer;
     protected int sndNxt;   
     protected TCPSegment sndUnackedSegment;
-
+    
     
     // Receiver variables:
     protected CircularQueue<TCPSegment> rcvQueue;
@@ -62,7 +62,8 @@ public class TSocket {
         timerService = new Timer();
 
         //Other necessary initializations
-        //...
+        this.sndUnackedSegment = null;
+        this.sndNxt = 0;
     }
 
 
@@ -71,28 +72,45 @@ public class TSocket {
         lk.lock();
         try {
             log.debug("%s->sendData(length=%d)", this, length);
-            // A completar per l'estudiant:
-            ...
-            // for each segment to send
-                // wait until the sent segment is acknowledged
-                // create a data segment 
-                // Taking into account if you are at the zero window case or not
-                // and send it
-                // Remember to start the timer
-            
-        } finally {
+            while (length > 0) {
+                while (sndUnackedSegment != null) {
+                    appCV.await();
+                }
+                
+                int dataLength = Math.min(length, sndMSS);
+                if (rcvWindow == 0) dataLength = 1; // Ojo amb aixo
+                sndUnackedSegment = this.segmentize(data, offset, dataLength);
+                offset += dataLength;
+                length -= dataLength;
+                this.sendSegment(sndUnackedSegment);
+                this.startRTO();
+                System.out.println("Segment enviat.");
+                sndNxt = (sndNxt + 1) % 2;
+                appCV.signalAll();
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
             lk.unlock();
         }
     }
 
     protected TCPSegment segmentize(byte[] data, int offset, int length) {
-        // A completar per l'estudiant (veieu practica 5):
-        ...
+        byte[] data_copy = new byte[length];
+        TCPSegment segment = new TCPSegment();
+        System.arraycopy(data, offset, data_copy, 0, length);
+        segment.setData(data_copy, 0, length);
+        segment.setDestinationPort(remotePort);
+        segment.setSourcePort(localPort);
+        segment.setSeqNum(sndNxt);
+        return segment;
     }
 
     protected void sendSegment(TCPSegment segment) {
         log.debug("%s->sendSegment(%s)", this, segment);
-        // A completar per l'estudiant (veieu practica 5):
+        proto.net.send(segment);
     }
 
     protected void timeout() {
@@ -137,14 +155,23 @@ public class TSocket {
      */
     public int receiveData(byte[] buf, int offset, int maxlen) {
         lk.lock();
+        int n = 0;
         try {
             log.debug("%s->receiveData(maxlen=%d)", this, maxlen);
             // A completar per l'estudiant:
-            ...
-            // wait until there is a received segment
-            // get data from the received segment
-        } finally {
+            while (rcvQueue.empty()) {
+                appCV.await();
+            }
+            while (n < maxlen && !rcvQueue.empty()) {
+                n += consumeSegment(buf, offset+n, maxlen-n);
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
             lk.unlock();
+            return n;
         }
     }
 
@@ -168,8 +195,14 @@ public class TSocket {
     }
 
     protected void sendAck() {
-               // A completar per l'estudiant:
-                ...
+        // A completar per l'estudiant:
+        TCPSegment ack = new TCPSegment();
+        ack.setAck(true);
+        ack.setAckNum(rcvNxt);
+        ack.setWindow(rcvQueue.free());
+        ack.setDestinationPort(remotePort);
+        ack.setSourcePort(localPort);
+        this.sendSegment(ack);
     }
 
 
@@ -184,15 +217,32 @@ public class TSocket {
             // Check ACK
             if (rseg.isAck()) {
                 // A completar per l'estudiant:
-                ...
-
-            } else if (rseg.getDataLength() > 0) {
-                // Process segment data
-                if (rcvQueue.full()) {
-                    A completar per l'estudiant:
+                if (rseg.getAckNum() == (sndUnackedSegment.getSeqNum()+1)%2) {
+                    System.out.println("ACK rebut");
+                    sndUnackedSegment = null;
+                    sndNxt = rseg.getAckNum();
+                    rcvWindow = rseg.getWindow();
+                    System.out.println("Window: " + rcvWindow);
                 }
-                // A completar per l'estudiant:
-                ...
+                appCV.signalAll();
+            }
+            else if (rseg.getDataLength() > 0) {
+                // Process segment data
+                System.out.println("Segment rebut.");
+                if (rcvQueue.full()) {
+                    log.warn("%s->processReceivedSegment: no free space: %d lost bytes",
+                                this, rseg.getDataLength());
+                    return;
+                }
+                if (rseg.getSeqNum() != rcvNxt) {
+                    sendAck();
+                    return;
+                }
+                rcvQueue.put(rseg);
+                rcvNxt = (rcvNxt + 1) % 2;
+                sendAck();
+                System.out.println("ACK enviat");
+                appCV.signalAll();
             }
         } finally {
             lk.unlock();

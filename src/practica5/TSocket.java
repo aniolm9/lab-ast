@@ -64,27 +64,18 @@ public class TSocket {
         // Pendent implementar cas finestra 0.
         try {
             log.debug("%s->sendData(length=%d)", this, length);
-            while (!segmentAcknowledged || rcvWindow == 0) {
-                appCV.await();
-            }
-            int dataLength = length;
-            while (rcvWindow > 0 && dataLength >= sndMSS) {
-                this.sendSegment(this.segmentize(data, offset, sndMSS));
-                //rcvWindow--;
-                segmentAcknowledged = false;
-                offset += sndMSS;
-                dataLength -= sndMSS;
-                appCV.signalAll();
-            }
-            if (length > 0 && rcvWindow > 0) {
+            while (length > 0) {
+                while (!segmentAcknowledged || rcvWindow == 0) {
+                    appCV.await();
+                }
+                
+                int dataLength = Math.min(length, sndMSS);
                 this.sendSegment(this.segmentize(data, offset, dataLength));
-                //rcvWindow--;
                 segmentAcknowledged = false;
+                offset += dataLength;
+                length -= dataLength;
                 appCV.signalAll();
             }
-            // for each segment to send
-                // wait until the sender is not expecting an acknowledgement
-                // create a data segment and send it
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -106,7 +97,7 @@ public class TSocket {
     }
 
     protected void sendSegment(TCPSegment segment) {
-        log.debug("%s->sendSegment(%s)", this, segment);
+        log.info("%s->sendSegment(%s)", this, segment);
         proto.net.send(segment);
     }
 
@@ -186,6 +177,7 @@ public class TSocket {
         rcvSegment = rseg;
         lk.lock();
         try {
+            log.info("%s->processSegment(%s)", this, rseg);
             // Check ACK
             if (rseg.isAck()) {
                 // A completar per l'estudiant:

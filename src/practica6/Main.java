@@ -11,7 +11,7 @@ public class Main {
     public static void main(String[] args){
 	//Introduir perdues
         double rate = 100.0;
-        double lossRatio = 0.0;
+        double lossRatio = 0.3;
         FDuplexChannel c = new FDuplexChannel(rate, lossRatio);
 
         new Thread(new Host1(c.getLeft())).start();

@@ -168,6 +168,7 @@ public class TSocket {
                 case CLOSE_WAIT: {
                     this.state = CLOSED;
                     proto.removeActiveTSocket(this);
+                    proto.removeListenTSocket(this);
                     break;
                 }
                 default:
@@ -194,10 +195,11 @@ public class TSocket {
                         log.debug("SYN Segment received in LISTEN state.");
                         // create a new TSocket for new connection and set it to ESTABLISHED state
                         // also set local and remote ports
-                        TSocket newConnectionSocket = new TSocket(proto, localPort);
-                        newConnectionSocket.remotePort = this.remotePort;
+                        TSocket newConnectionSocket = new TSocket(proto, rseg.getDestinationPort());
+                        newConnectionSocket.remotePort = rseg.getSourcePort();
                         newConnectionSocket.state = ESTABLISHED;
                         proto.addActiveTSocket(newConnectionSocket);
+                        //System.out.println(newConnectionSocket);
 
                         // prepare this TSocket to accept the newly created TSocket
                         acceptQueue.put(newConnectionSocket);
@@ -206,11 +208,12 @@ public class TSocket {
 
                         // from the new TSocket send SYN segment for new connection 
                         TCPSegment syn = new TCPSegment();
-                        syn.setSourcePort(localPort);
-                        syn.setDestinationPort(remotePort);
+                        syn.setSourcePort(newConnectionSocket.localPort);
+                        syn.setDestinationPort(newConnectionSocket.remotePort);
                         syn.setSyn(true);
-                        newConnectionSocket.sendSegment(syn);                                
+                        newConnectionSocket.sendSegment(syn);
                     }
+                    logDebugState();
                     break;
                 }
                 case SYN_SENT: {
@@ -220,6 +223,7 @@ public class TSocket {
                         appCV.signalAll();
                         logDebugState();
                     }
+                    logDebugState();
                     break;
                 }
                 case ESTABLISHED: {
@@ -231,13 +235,16 @@ public class TSocket {
                         this.sendSegment(fin);
                         this.state = CLOSE_WAIT;
                     }
+                    logDebugState();
                     break;
                 }
                 case FIN_WAIT: {
                     if (rseg.isFin()) {
                         this.state = CLOSED;
                         proto.removeActiveTSocket(this);
+                        proto.removeListenTSocket(this);
                     }
+                    logDebugState();
                     break;
                 }
                 case CLOSE_WAIT: {
@@ -253,6 +260,7 @@ public class TSocket {
                     if (rseg.isFin()) {
                         this.close();
                     }
+                    logDebugState();
                     break;
                 }
             }

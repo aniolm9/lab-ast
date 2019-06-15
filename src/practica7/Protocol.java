@@ -104,22 +104,25 @@ public class Protocol {
     protected TSocket getMatchingTSocket(int localPort, int remotePort) {
         lk.lock();
         try {
-            /*log.debug("Checking active sockets...");
+            //log.debug("Checking active sockets...");
             for (TSocket s : activeTSocks) {
+                log.debug("Active sockets: " + s);
                 if (s.localPort == localPort && s.remotePort == remotePort) {
                     return s;
                 }
             }
-            log.debug("Checking listening sockets...");
+            //log.debug("Checking listening sockets...");
             for (TSocket s : listenTSocks) {
-                if (s.localPort == localPort && s.remotePort == remotePort) {
+                log.debug("Listening sockets: " + s);
+                if (s.localPort == localPort) { // Without the remote comparation works better.
                     return s;
                 }
             }
             log.info("No matching socket.");
-            return null;*/
-            System.out.println(this.activeTSocks.size());
             return null;
+            //System.out.println("Active sockets: " + this.activeTSocks.size());
+            //System.out.println("Listening sockets: " + this.listenTSocks.size());
+            //return null;
         }
         finally {
             lk.unlock();

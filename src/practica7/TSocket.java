@@ -94,16 +94,17 @@ public class TSocket {
      * Passive open
      */
     protected void listen() {
-      lk.lock();
-      try {
-        log.debug("%s->listen()", this);
-        acceptQueue = new CircularQueue<TSocket>(5);
-        state = LISTEN;
-        proto.addListenTSocket(this);
-        logDebugState();
-      } finally {
-        lk.unlock();
-      }
+        lk.lock();
+        try {
+            log.debug("%s->listen()", this);
+            acceptQueue = new CircularQueue<TSocket>(5);
+            state = LISTEN;
+            proto.addListenTSocket(this);
+            logDebugState();
+        }
+        finally {
+            lk.unlock();
+        }
     }
 
     public TSocket accept() {
@@ -166,6 +167,7 @@ public class TSocket {
                 }
                 case CLOSE_WAIT: {
                     this.state = CLOSED;
+                    proto.removeActiveTSocket(this);
                     break;
                 }
                 default:
@@ -234,6 +236,7 @@ public class TSocket {
                 case FIN_WAIT: {
                     if (rseg.isFin()) {
                         this.state = CLOSED;
+                        proto.removeActiveTSocket(this);
                     }
                     break;
                 }

@@ -135,7 +135,7 @@ public class TSocket {
             appCV.signalAll();
             // Create and send a SYN segment.
             TCPSegment syn = new TCPSegment();
-            syn.isSyn();
+            syn.setSyn(true);
             sendSegment(syn);
             this.state = SYN_SENT;
             logDebugState();

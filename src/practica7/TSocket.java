@@ -131,10 +131,11 @@ public class TSocket {
             log.debug("%s->connect(%d)", this, remPort);
             remotePort = remPort;
             proto.addActiveTSocket(this);
-            // S'hauria de despertar el mètode accept(), ja no té la cua buida.
-            appCV.signalAll();
+            log.debug("Added socket %s to active sockets", this);
             // Create and send a SYN segment.
             TCPSegment syn = new TCPSegment();
+            syn.setSourcePort(localPort);
+            syn.setDestinationPort(remotePort);
             syn.setSyn(true);
             sendSegment(syn);
             this.state = SYN_SENT;
@@ -152,21 +153,26 @@ public class TSocket {
     public void close() {
         lk.lock();
         try {
-          log.debug("%s->close()", this);
-          switch (state) {
-            case ESTABLISHED:
-            case CLOSE_WAIT: {
-                
-                // Completar
-
-                throw new RuntimeException("Falta completar");   
-                
-                break;
+            log.debug("%s->close()", this);
+            switch (state) {
+                case ESTABLISHED: {
+                    TCPSegment fin = new TCPSegment();
+                    fin.setSourcePort(localPort);
+                    fin.setDestinationPort(remotePort);
+                    fin.setFin(true);
+                    this.sendSegment(fin);
+                    this.state = FIN_WAIT;
+                    break;
+                }
+                case CLOSE_WAIT: {
+                    this.state = CLOSED;
+                    break;
+                }
+                default:
+                    log.error("%s->close: connection does not exist", this);
             }
-            default:
-                log.error("%s->close: connection does not exist", this);
-          }
-        } finally {
+        }
+        finally {
             lk.unlock();
         }
     }
@@ -179,64 +185,76 @@ public class TSocket {
     protected void processReceivedSegment(TCPSegment rseg) {
         lk.lock();
         try {
+            log.debug("Received segment.");
             switch (state) {
-            case LISTEN: {
-                if (rseg.isSyn()) {
-                    // create a new TSocket for new connection and set it to ESTABLISHED state
-                    // also set local and remote ports
+                case LISTEN: {
+                    if (rseg.isSyn()) {
+                        log.debug("SYN Segment received in LISTEN state.");
+                        // create a new TSocket for new connection and set it to ESTABLISHED state
+                        // also set local and remote ports
+                        TSocket newConnectionSocket = new TSocket(proto, localPort);
+                        newConnectionSocket.remotePort = this.remotePort;
+                        newConnectionSocket.state = ESTABLISHED;
+                        proto.addActiveTSocket(newConnectionSocket);
 
-                    // Completar
-                    
-                    proto.addActiveTSocket(...);
+                        // prepare this TSocket to accept the newly created TSocket
+                        acceptQueue.put(newConnectionSocket);
+                        // acceptQueue isn't empty anymore, we should signal accepy()
+                        appCV.signalAll();
 
-                    // prepare this TSocket to accept the newly created TSocket
-
-                    // Completar
-                    
-                    // from the new TSocket send SYN segment for new connection 
-                
-                    // Completar
-
-                    throw new RuntimeException("Falta completar");   
-                
-                }
-                break;
-            }
-            case SYN_SENT: {
-                if (rseg.isSyn()) {
-                
-                    // Completar
-
-                    throw new RuntimeException("Falta completar");   
-                
-
-                    logDebugState();
-                }
-                break;
-            }
-            case ESTABLISHED:
-            case FIN_WAIT:
-            case CLOSE_WAIT: {
-                // Process segment text
-                if (rseg.getDataLength() > 0) {
-                    if (state == ESTABLISHED || state == FIN_WAIT) {
-                        // Here should go the segment's data processing
-                    } else {
-                        // This should not occur, since a FIN has been received from the
-                        // remote side.  Ignore the segment text.
+                        // from the new TSocket send SYN segment for new connection 
+                        TCPSegment syn = new TCPSegment();
+                        syn.setSourcePort(localPort);
+                        syn.setDestinationPort(remotePort);
+                        syn.setSyn(true);
+                        newConnectionSocket.sendSegment(syn);                                
                     }
+                    break;
                 }
-                // Check FIN bit
-                
-                    // Completar
-
-                    throw new RuntimeException("Falta completar");   
-                
-
-                break;
+                case SYN_SENT: {
+                    if (rseg.isSyn()) {
+                        // Change the state to ESTABLISHED and signal connect().
+                        this.state = ESTABLISHED;
+                        appCV.signalAll();
+                        logDebugState();
+                    }
+                    break;
+                }
+                case ESTABLISHED: {
+                    if (rseg.isFin()) {
+                        TCPSegment fin = new TCPSegment();
+                        fin.setSourcePort(localPort);
+                        fin.setDestinationPort(remotePort);
+                        fin.setFin(true);
+                        this.sendSegment(fin);
+                        this.state = CLOSE_WAIT;
+                    }
+                    break;
+                }
+                case FIN_WAIT: {
+                    if (rseg.isFin()) {
+                        this.state = CLOSED;
+                    }
+                    break;
+                }
+                case CLOSE_WAIT: {
+                    // Process segment text
+                    if (rseg.getDataLength() > 0) {
+                        if (state == ESTABLISHED || state == FIN_WAIT) {
+                            // Here should go the segment's data processing
+                        } else {
+                            // This should not occur, since a FIN has been received from the
+                            // remote side.  Ignore the segment text.
+                        }
+                    }
+                    if (rseg.isFin()) {
+                        this.close();
+                    }
+                    break;
+                }
             }
-            }
-        } finally {
+        }
+        finally {
             lk.unlock();
         }
     }

@@ -52,6 +52,8 @@ public class Protocol {
     }
 
     protected void ipInput(TCPSegment segment) {
+        log.debug("Seg dest port: " + segment.getDestinationPort());
+        log.debug("Seg source port: " + segment.getSourcePort());
         TSocket s = this.getMatchingTSocket(segment.getDestinationPort(), segment.getSourcePort());
         if (s != null) s.processReceivedSegment(segment);
     }
@@ -102,20 +104,22 @@ public class Protocol {
     protected TSocket getMatchingTSocket(int localPort, int remotePort) {
         lk.lock();
         try {
-            TSocket socket = null;
+            /*log.debug("Checking active sockets...");
             for (TSocket s : activeTSocks) {
                 if (s.localPort == localPort && s.remotePort == remotePort) {
-                    socket = s;
-                    return socket;
+                    return s;
                 }
             }
+            log.debug("Checking listening sockets...");
             for (TSocket s : listenTSocks) {
                 if (s.localPort == localPort && s.remotePort == remotePort) {
-                    socket = s;
-                    break;
+                    return s;
                 }
             }
-            return socket;
+            log.info("No matching socket.");
+            return null;*/
+            System.out.println(this.activeTSocks.size());
+            return null;
         }
         finally {
             lk.unlock();

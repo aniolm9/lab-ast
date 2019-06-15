@@ -9,7 +9,6 @@ import utils.FDuplexChannel;
 
 
 public class Main {
-
     public static void main(String[] args){
         System.setProperty("ast.simplelog.rootLevel", "all");
         FDuplexChannel c = new FDuplexChannel();
@@ -17,7 +16,6 @@ public class Main {
         new Thread(new Host1(c.getLeft())).start();
         new Thread(new Host2(c.getRight())).start();
     }    
-
 }
 
 
@@ -52,7 +50,6 @@ class Host1 implements Runnable {
             log.info("Service disconnected");
         }
     }
-
 }
 
 
@@ -80,7 +77,6 @@ class Host2 implements Runnable {
             log.info("Client disconnected");
         }
     }
-
 }
 
 

@@ -201,7 +201,7 @@ public class TSocket {
 
                         // prepare this TSocket to accept the newly created TSocket
                         acceptQueue.put(newConnectionSocket);
-                        // acceptQueue isn't empty anymore, we should signal accepy()
+                        // acceptQueue isn't empty anymore, we should signal accept()
                         appCV.signalAll();
 
                         // from the new TSocket send SYN segment for new connection 

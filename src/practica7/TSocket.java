@@ -107,43 +107,46 @@ public class TSocket {
     }
 
     public TSocket accept() {
-      lk.lock();
-      try {
-        log.debug("%1$s->accept()", this);
-
-        // Completar
-       
-        
-        log.debug("%1$s->accepted", this);
-        
-        throw new RuntimeException("Falta completar");    
-        
-      } finally {
-        lk.unlock();
-      }
+        lk.lock();
+        try {
+            log.debug("%1$s->accept()", this);
+            while (acceptQueue.empty()) {
+                appCV.awaitUninterruptibly();
+            }
+            TSocket accepted = acceptQueue.get();
+            log.debug("%1$s->accepted", this);       
+            return accepted;
+        }
+        finally {
+            lk.unlock();
+        }
     }
 
     /**
      * Active open
      */
     protected void connect(int remPort) {
-      lk.lock();
-      try {
-        log.debug("%s->connect(%d)", this, remPort);
-        remotePort = remPort;
-        proto.addActiveTSocket(this);
-// Descomentar la seguent linia i completar        
-//        state = ... ;
-        logDebugState();
-        
-        // Completar
-  
-                
-        throw new RuntimeException("Falta completar");  
-        
-      } finally {
-        lk.unlock();
-      }
+        lk.lock();
+        try {
+            log.debug("%s->connect(%d)", this, remPort);
+            remotePort = remPort;
+            proto.addActiveTSocket(this);
+            // S'hauria de despertar el mètode accept(), ja no té la cua buida.
+            appCV.signalAll();
+            // Create and send a SYN segment.
+            TCPSegment syn = new TCPSegment();
+            syn.isSyn();
+            sendSegment(syn);
+            this.state = SYN_SENT;
+            logDebugState();
+            // Wait for ESTABLISHED state.
+            while (this.state != ESTABLISHED) {
+                appCV.awaitUninterruptibly();
+            }
+        }
+        finally {
+            lk.unlock();
+        }
     }
 
     public void close() {

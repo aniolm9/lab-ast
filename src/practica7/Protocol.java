@@ -5,10 +5,12 @@ package practica7;
 
 import ast.logging.Log;
 import ast.logging.LogFactory;
+import ast.protocols.tcp.TCPSegment;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.ArrayList;
+import utils.FDuplexChannel;
 
 
 public class Protocol {
@@ -32,7 +34,7 @@ public class Protocol {
     }
 
     public TSocket openListen(int localPort) {
-        // Comprobar que el port no esta ocupat
+        // Comprovar que el port no esta ocupat
         if (portInUse(localPort, listenTSocks) || portInUse(localPort, activeTSocks)) {
             log.error("openListen: port %d is in use", localPort);
             return null;
@@ -49,15 +51,10 @@ public class Protocol {
         return sock;
     }
 
-    public void ipInput(TCPSegment segment) {
-        // Search matching TSocket
-
-        // Completar
-        
-        // Fet en anteriors practiques
-        
-        throw new RuntimeException("Falta completar");
-   }
+    protected void ipInput(TCPSegment segment) {
+        TSocket s = this.getMatchingTSocket(segment.getDestinationPort(), segment.getSourcePort());
+        if (s != null) s.processReceivedSegment(segment);
+    }
 
     //-------------------------------------------
     // Internals:
@@ -104,14 +101,23 @@ public class Protocol {
 
     protected TSocket getMatchingTSocket(int localPort, int remotePort) {
         lk.lock();
-        try{
-        // Completar
-        // Modificar adientment el metode de alguna practica anterior
-        
-        throw new RuntimeException("Falta completar");        
-        
-        
-        } finally {
+        try {
+            TSocket socket = null;
+            for (TSocket s : activeTSocks) {
+                if (s.localPort == localPort && s.remotePort == remotePort) {
+                    socket = s;
+                    return socket;
+                }
+            }
+            for (TSocket s : listenTSocks) {
+                if (s.localPort == localPort && s.remotePort == remotePort) {
+                    socket = s;
+                    break;
+                }
+            }
+            return socket;
+        }
+        finally {
             lk.unlock();
         }
     }

@@ -5,10 +5,11 @@
  */
 package practica8.servidor;
 
+import practica8.Communication;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import practica8.Pont;
+import practica8.PontInjust;
 
 /**
  *
@@ -16,9 +17,9 @@ import practica8.Pont;
  */
 public class PontWorker implements Runnable {
     Socket sc;
-    Pont p;
+    PontInjust p;
     
-    public PontWorker(Socket sc, Pont p) {
+    public PontWorker(Socket sc, PontInjust p) {
         this.sc = sc;
         this.p = p;
     }
@@ -47,7 +48,8 @@ public class PontWorker implements Runnable {
                     }
                     case (Communication.FIN): {
                         sc.close();
-                        break;
+                        System.out.println("Ha sortit un client.");
+                        return;
                     }
                 }
             }

@@ -1,6 +1,4 @@
-package practica8.client;
-
-import practica8.servidor.*;
+package practica8;
 
 /**
  *

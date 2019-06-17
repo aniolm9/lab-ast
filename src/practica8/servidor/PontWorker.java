@@ -31,7 +31,9 @@ public class PontWorker implements Runnable {
             ObjectInputStream ois = new ObjectInputStream(sc.getInputStream());
             
             while (true) {
+                //System.out.println(ois.readInt());
                 int solicitud = ois.readInt();
+                System.out.println("Sol: " + solicitud);
                 switch (solicitud) {
                     case (Communication.ENTRAR): {
                         boolean sentit = ois.readBoolean();
@@ -51,6 +53,8 @@ public class PontWorker implements Runnable {
                         System.out.println("Ha sortit un client.");
                         return;
                     }
+                    default:
+                        break;
                 }
             }
         }

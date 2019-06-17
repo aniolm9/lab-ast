@@ -48,7 +48,7 @@ public class PontStub implements Pont {
             oos.writeInt(Communication.ENTRAR);
             oos.writeBoolean(sentit);
             oos.flush();
-            //int resultat = ois.readInt();
+            System.out.println("Entrar: " + ois.readInt());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -60,7 +60,7 @@ public class PontStub implements Pont {
         try {
             oos.writeInt(Communication.SORTIR);
             oos.flush();
-            //int resultat = ois.readInt();
+            System.out.println("Sortir: " + ois.readInt());
         }
         catch (Exception e) {
             e.printStackTrace();

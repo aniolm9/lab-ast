@@ -21,14 +21,14 @@ public class Cotxe implements Runnable {
         p.entrar(sentit);
         System.out.println("He entrat.");
         // Wait 5 seconds.
-        try {
+        /*try {
             Thread.sleep(5000);
         } catch (InterruptedException ex) {
             Logger.getLogger(Cotxe.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
         p.sortir();
         System.out.println("He sortit.");
-        p.close();
+        //p.close();
         System.out.println("Tancat.");
     }
     

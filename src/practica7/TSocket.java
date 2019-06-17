@@ -165,10 +165,16 @@ public class TSocket {
                     this.state = FIN_WAIT;
                     break;
                 }
+                // Preguntar si cal fer FIN i si s'han de fer els dos remove.
                 case CLOSE_WAIT: {
+                    TCPSegment fin = new TCPSegment();
+                    fin.setSourcePort(localPort);
+                    fin.setDestinationPort(remotePort);
+                    fin.setFin(true);
+                    this.sendSegment(fin);
                     this.state = CLOSED;
                     proto.removeActiveTSocket(this);
-                    proto.removeListenTSocket(this);
+                    //proto.removeListenTSocket(this);
                     break;
                 }
                 default:
@@ -228,11 +234,6 @@ public class TSocket {
                 }
                 case ESTABLISHED: {
                     if (rseg.isFin()) {
-                        TCPSegment fin = new TCPSegment();
-                        fin.setSourcePort(localPort);
-                        fin.setDestinationPort(remotePort);
-                        fin.setFin(true);
-                        this.sendSegment(fin);
                         this.state = CLOSE_WAIT;
                     }
                     logDebugState();
@@ -242,7 +243,7 @@ public class TSocket {
                     if (rseg.isFin()) {
                         this.state = CLOSED;
                         proto.removeActiveTSocket(this);
-                        proto.removeListenTSocket(this);
+                        //proto.removeListenTSocket(this);
                     }
                     logDebugState();
                     break;
@@ -250,15 +251,14 @@ public class TSocket {
                 case CLOSE_WAIT: {
                     // Process segment text
                     if (rseg.getDataLength() > 0) {
-                        if (state == ESTABLISHED || state == FIN_WAIT) {
+                        /*if (state == ESTABLISHED || state == FIN_WAIT) {
                             // Here should go the segment's data processing
                         } else {
                             // This should not occur, since a FIN has been received from the
                             // remote side.  Ignore the segment text.
-                        }
-                    }
-                    if (rseg.isFin()) {
-                        this.close();
+                        }*/
+                        // This should not occur, since a FIN has been received from the
+                        // remote side.  Ignore the segment text.
                     }
                     logDebugState();
                     break;

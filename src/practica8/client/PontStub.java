@@ -35,7 +35,6 @@ public class PontStub implements Pont {
         try {
             oos.writeInt(Communication.FIN);
             oos.flush();
-            //sc.close();
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -46,6 +45,7 @@ public class PontStub implements Pont {
     public void entrar(boolean sentit) {
         try {
             oos.writeInt(Communication.ENTRAR);
+            //oos.flush(); // Just send the integer, then the boolean.
             oos.writeBoolean(sentit);
             oos.flush();
             System.out.println("Entrar: " + ois.readInt());

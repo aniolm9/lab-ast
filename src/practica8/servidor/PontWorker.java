@@ -5,6 +5,7 @@
  */
 package practica8.servidor;
 
+import java.io.EOFException;
 import practica8.Communication;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -31,9 +32,14 @@ public class PontWorker implements Runnable {
             ObjectInputStream ois = new ObjectInputStream(sc.getInputStream());
             
             while (true) {
-                //System.out.println(ois.readInt());
-                int solicitud = ois.readInt();
-                System.out.println("Sol: " + solicitud);
+                int solicitud;
+                try {
+                    solicitud = ois.readInt();
+                    System.out.println("Sol: " + solicitud);
+                }
+                catch (EOFException eof) {
+                    break;
+                }
                 switch (solicitud) {
                     case (Communication.ENTRAR): {
                         boolean sentit = ois.readBoolean();

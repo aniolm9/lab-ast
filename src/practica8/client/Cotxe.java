@@ -27,9 +27,7 @@ public class Cotxe implements Runnable {
             Logger.getLogger(Cotxe.class.getName()).log(Level.SEVERE, null, ex);
         }*/
         p.sortir();
-        System.out.println("He sortit.");
         //p.close();
-        System.out.println("Tancat.");
+        System.out.println("He sortit.");
     }
-    
 }

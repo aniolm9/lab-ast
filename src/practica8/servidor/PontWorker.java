@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package practica8.servidor;
 
 import java.io.EOFException;
@@ -35,7 +30,7 @@ public class PontWorker implements Runnable {
                 int solicitud;
                 try {
                     solicitud = ois.readInt();
-                    System.out.println("Sol: " + solicitud);
+                    //System.out.println("Sol: " + solicitud);
                 }
                 catch (EOFException eof) {
                     break;

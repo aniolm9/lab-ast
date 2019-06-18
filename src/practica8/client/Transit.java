@@ -8,13 +8,12 @@ import java.util.ArrayList;
  */
 public class Transit {
     public static void main (String args[]) {
-        PontStub p = new PontStub();
         boolean sentit = true;
         int threads = 2;
         ArrayList<Thread> threadsQueue = new ArrayList<>();
         for (int i = 0; i < threads; i++) {
             sentit = !sentit;
-            Thread th = new Thread(new Cotxe(p, sentit));
+            Thread th = new Thread(new Cotxe(new PontStub(), sentit));
             threadsQueue.add(th);
             th.start();
         }
@@ -26,6 +25,5 @@ public class Transit {
                 e.printStackTrace();
             }
         }
-        p.close();
     }
 }

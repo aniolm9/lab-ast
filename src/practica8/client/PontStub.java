@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package practica8.client;
 
 import java.io.ObjectInputStream;
@@ -45,10 +40,10 @@ public class PontStub implements Pont {
     public void entrar(boolean sentit) {
         try {
             oos.writeInt(Communication.ENTRAR);
-            //oos.flush(); // Just send the integer, then the boolean.
             oos.writeBoolean(sentit);
             oos.flush();
-            System.out.println("Entrar: " + ois.readInt());
+            ois.readInt();
+            //System.out.println("Entrar: " + ois.readInt());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -60,7 +55,8 @@ public class PontStub implements Pont {
         try {
             oos.writeInt(Communication.SORTIR);
             oos.flush();
-            System.out.println("Sortir: " + ois.readInt());
+            ois.readInt();
+            //System.out.println("Sortir: " + ois.readInt());
         }
         catch (Exception e) {
             e.printStackTrace();

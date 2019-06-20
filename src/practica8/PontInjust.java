@@ -10,19 +10,19 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class PontInjust implements Pont {
     int dins;
-    boolean sentitActual;
+    int sentitActual;
     Lock lk;
     Condition espera;
     
     public PontInjust() {
         dins = 0;
-        sentitActual = false;
+        sentitActual = 0;
         lk = new ReentrantLock();
         espera = lk.newCondition();
     }
     
     @Override
-    public void entrar(boolean sentit) {
+    public void entrar(int sentit) {
         lk.lock();
         try {
             while (sentit != sentitActual && dins > 0) {

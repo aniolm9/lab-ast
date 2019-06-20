@@ -9,9 +9,9 @@ import java.util.logging.Logger;
  */
 public class Cotxe implements Runnable {
     PontStub p;
-    boolean sentit;
+    int sentit;
     
-    public Cotxe(PontStub p, boolean sentit) {
+    public Cotxe(PontStub p, int sentit) {
         this.p = p;
         this.sentit = sentit;
     }

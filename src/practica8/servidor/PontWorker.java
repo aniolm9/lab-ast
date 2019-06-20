@@ -37,7 +37,7 @@ public class PontWorker implements Runnable {
                 }
                 switch (solicitud) {
                     case (Communication.ENTRAR): {
-                        boolean sentit = ois.readBoolean();
+                        int sentit = ois.readInt();
                         p.entrar(sentit);
                         oos.writeInt(Communication.OK);
                         oos.flush();

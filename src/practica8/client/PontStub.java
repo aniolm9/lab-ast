@@ -37,10 +37,10 @@ public class PontStub implements Pont {
     }
     
     @Override
-    public void entrar(boolean sentit) {
+    public void entrar(int sentit) {
         try {
             oos.writeInt(Communication.ENTRAR);
-            oos.writeBoolean(sentit);
+            oos.writeInt(sentit);
             oos.flush();
             ois.readInt();
             //System.out.println("Entrar: " + ois.readInt());

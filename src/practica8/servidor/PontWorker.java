@@ -1,11 +1,11 @@
 package practica8.servidor;
 
 import java.io.EOFException;
-import practica8.Communication;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import practica8.PontInjust;
+import practica8.Comms;
 
 /**
  *
@@ -36,20 +36,20 @@ public class PontWorker implements Runnable {
                     break;
                 }
                 switch (solicitud) {
-                    case (Communication.ENTRAR): {
+                    case (Comms.ENTRAR): {
                         int sentit = ois.readInt();
                         p.entrar(sentit);
-                        oos.writeInt(Communication.OK);
+                        oos.writeInt(Comms.OK);
                         oos.flush();
                         break;
                     }
-                    case (Communication.SORTIR): {
+                    case (Comms.SORTIR): {
                         p.sortir();
-                        oos.writeInt(Communication.OK);
+                        oos.writeInt(Comms.OK);
                         oos.flush();
                         break;
                     }
-                    case (Communication.FIN): {
+                    case (Comms.FIN): {
                         sc.close();
                         System.out.println("Ha sortit un client.");
                         return;

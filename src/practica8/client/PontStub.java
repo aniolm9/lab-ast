@@ -3,8 +3,8 @@ package practica8.client;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import practica8.Communication;
 import practica8.Pont;
+import practica8.Comms;
 
 /**
  *
@@ -17,7 +17,7 @@ public class PontStub implements Pont {
     
     public PontStub() {
         try {
-            sc = new Socket(Communication.HOST, Communication.PORT);
+            sc = new Socket(Comms.HOST, Comms.PORT);
             ois = new ObjectInputStream(sc.getInputStream());
             oos = new ObjectOutputStream(sc.getOutputStream());
         }
@@ -28,7 +28,7 @@ public class PontStub implements Pont {
     
     public void close() {
         try {
-            oos.writeInt(Communication.FIN);
+            oos.writeInt(Comms.FIN);
             oos.flush();
         }
         catch (Exception e) {
@@ -39,7 +39,7 @@ public class PontStub implements Pont {
     @Override
     public void entrar(int sentit) {
         try {
-            oos.writeInt(Communication.ENTRAR);
+            oos.writeInt(Comms.ENTRAR);
             oos.writeInt(sentit);
             oos.flush();
             ois.readInt();
@@ -53,7 +53,7 @@ public class PontStub implements Pont {
     @Override
     public void sortir() {
         try {
-            oos.writeInt(Communication.SORTIR);
+            oos.writeInt(Comms.SORTIR);
             oos.flush();
             ois.readInt();
             //System.out.println("Sortir: " + ois.readInt());

@@ -6,14 +6,14 @@ import java.util.ArrayList;
  *
  * @author aniol
  */
-public class Transit {
+public class TransitJust {
     public static void main (String args[]) {
-        int sentit = 0;
-        int threads = 3;
+        int sentit;
+        int threads = 5;
         ArrayList<Thread> threadsQueue = new ArrayList<>();
         for (int i = 0; i < threads; i++) {
-            sentit = (sentit + 1)%2;
-            Thread th = new Thread(new Cotxe(new PontStub(), sentit));
+            sentit = (int)((Math.random()*10)%2);
+            Thread th = new Thread(new CotxeJust(new PontJustStub(), sentit));
             threadsQueue.add(th);
             th.start();
         }

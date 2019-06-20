@@ -1,9 +1,9 @@
 package practica8.servidor;
 
-import practica8.Communication;
 import java.net.ServerSocket;
 import java.net.Socket;
 import practica8.PontInjust;
+import practica8.Comms;
 
 /**
  *
@@ -12,7 +12,7 @@ import practica8.PontInjust;
 public class PontSkeleton {
     public static void main(String args[]) {
         try {
-            ServerSocket ss = new ServerSocket(Communication.PORT);
+            ServerSocket ss = new ServerSocket(Comms.PORT);
             PontInjust p = new PontInjust();
             
             while (true) {

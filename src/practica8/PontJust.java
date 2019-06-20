@@ -24,12 +24,36 @@ public class PontJust implements Pont {
     
     @Override
     public void entrar (int sentit) {
-    
+        lk.lock();
+        try {
+            if (dins > 0 && sentitActual != sentit || esperant[1-sentit] > 0) {
+                esperant[sentit]++;
+                cuaEspera[sentit].awaitUninterruptibly();
+            }
+            else {
+                dins++;
+            }
+            sentitActual = sentit;
+        }
+        finally {
+            lk.unlock();
+        }
     }
     
     @Override
     public void sortir () {
-        
+        lk.lock();
+        try {
+            dins--;
+            if (dins == 0 && esperant[1-sentitActual] > 0) {
+                sentitActual = 1 - sentitActual;
+                dins = esperant[sentitActual];
+                esperant[sentitActual] = 0;
+                cuaEspera[sentitActual].signalAll();
+            }
+        }
+        finally {
+            lk.unlock();
+        }
     }
-    
 }
